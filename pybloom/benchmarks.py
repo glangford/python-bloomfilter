@@ -28,7 +28,7 @@ def main(capacity=100000, request_error_rate=0.1):
     trials = f.capacity
     fp = 0
     start = time.time()
-    for i in xrange(f.capacity, f.capacity + trials + 1):
+    for i in xrange(f.capacity, f.capacity + trials):
         if i in f:
             fp += 1
     end = time.time()
