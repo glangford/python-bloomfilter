@@ -95,11 +95,13 @@ def make_hashfuncs(num_slices, num_bits):
         for salt in salts:
             h = salt.copy()
             h.update(key)
-            rval.extend(uint % num_bits for uint in unpack(fmt, h.digest()))
+            rval.extend( [uint % num_bits for uint in unpack(fmt, h.digest())] )
         del rval[num_slices:]
         return rval
     # Return one of the defined wrappers; a simpler/faster function 
     # is selected if possible
+    #return _make_hashfuncs
+    ######################
     if num_salts == 1:
         hasher = salts[0]
         if len(fmt) == num_slices:
