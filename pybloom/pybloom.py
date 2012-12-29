@@ -42,7 +42,7 @@ try:
 except ImportError:
     raise ImportError('pybloom requires bitarray >= 0.3.4')
 
-__version__ = '2.0'
+__version__ = '2.0X'
 __author__  = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\
                Marius Eriksen <marius@monkey.org>,\
                Alex Brasetvik <alex@brasetvik.com>"
@@ -78,14 +78,14 @@ def make_hashfuncs(num_slices, num_bits):
             h.update( key.encode('utf-8'))
         else:
             h.update(str(key))
-        return [uint % num_bits for uint in unpack(fmt, h.digest())]
+        return ( uint % num_bits for uint in unpack(fmt, h.digest()) )
     def _make_single_hash_function_trim(key):
         h = hasher.copy()
         if isinstance(key, unicode):
             h.update( key.encode('utf-8'))
         else:
             h.update(str(key))
-        return [ uint % num_bits for uint in unpack(fmt, (h.digest())[:trim_digest]) ]
+        return ( uint % num_bits for uint in unpack(fmt, (h.digest())[:trim_digest]) )
     def _make_hashfuncs(key):
         if isinstance(key, unicode):
             key = key.encode('utf-8')
@@ -177,10 +177,20 @@ class BloomFilter(object):
         """
         bits_per_slice = self.bits_per_slice
         bitarray = self.bitarray
-        if not isinstance(key, list):
-            hashes = self.make_hashes(key)
-        else:
-            hashes = key
+        ###if not isinstance(key, list):
+        hashes = self.make_hashes(key)
+        ###else:
+        ###    hashes = key
+        offset = 0
+        for k in hashes:
+            if not bitarray[offset + k]:
+                return False
+            offset += bits_per_slice
+        return True
+
+    def _containsHashes(self, hashes):
+        bits_per_slice = self.bits_per_slice
+        bitarray = self.bitarray
         offset = 0
         for k in hashes:
             if not bitarray[offset + k]:
@@ -206,8 +216,11 @@ class BloomFilter(object):
         bitarray = self.bitarray
         bits_per_slice = self.bits_per_slice
         hashes = self.make_hashes(key)
-        if not skip_check and hashes in self:
-            return True
+        if not skip_check:
+            hashes = list(hashes)   # list needed since make_hashes might return generator
+            if self._containsHashes(hashes):
+                return True
+        #
         if self.count > self.capacity:
             raise IndexError("BloomFilter is at capacity")
         offset = 0
