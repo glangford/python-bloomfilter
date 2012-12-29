@@ -5,7 +5,7 @@ import sys
 from pybloom import BloomFilter
 import bitarray, math, time
 
-def main(capacity=100000, request_error_rate=0.001):
+def main(capacity=100000, request_error_rate=0.0001):
     f = BloomFilter(capacity=capacity, error_rate=request_error_rate)
     assert (capacity == f.capacity)
     start = time.time()
