@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import doctest
 import unittest
@@ -5,6 +6,7 @@ import random
 import tempfile
 from pybloom import BloomFilter, ScalableBloomFilter
 from unittest import TestSuite
+from itertools import product
 
 def additional_tests():
     proj_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -13,6 +15,27 @@ def additional_tests():
     if os.path.exists(readme_fn):
         suite.addTest(doctest.DocFileSuite(readme_fn, module_relative=False))
     return suite
+
+class TestFilters(unittest.TestCase):
+    def test_membership(self):
+        capacities = [10000, 20000, 50000, 100000]
+        rates = [.01, 1E-3, 5E-4, 1E-4, 1E-5]
+        for c,r in product(capacities, rates):
+            f = BloomFilter(c,r)
+            num_bits = f.num_bits
+            num_slices = f.num_slices
+            bits_per_slice = f.bits_per_slice
+            print c,r
+            # Fill to capacity
+            for i in xrange(0, f.capacity):
+                f.add(i, skip_check=True)
+            # Verify filter parameters are unchanged
+            self.assertEqual( num_bits, f.num_bits )
+            self.assertEqual( num_slices, f.num_slices )
+            self.assertEqual( bits_per_slice, f.bits_per_slice )
+            # Verify membership (no false negatives)
+            for i in xrange(0, f.capacity):
+                self.assertIn( i, f )
 
 class TestUnionIntersection(unittest.TestCase):
     def test_union(self):
