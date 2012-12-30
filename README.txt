@@ -1,3 +1,8 @@
+This fork substantially improves the performance of the 
+original BloomFilter, while retaining the same hash functions. 
+
+------------------
+
 pybloom is a module that includes a Bloom Filter data structure along with
 an implmentation of Scalable Bloom Filters as discussed in:
 

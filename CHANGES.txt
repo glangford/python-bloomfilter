@@ -1,3 +1,8 @@
+Changes in 2.0X
+===============
+Substantially improved performance of membership checking in BloomFilter
+for most combinations of capacity and error rate.
+
 Changes in 2.0
 ==============
 Made major corrections to the algorithms for both BloomFilter and

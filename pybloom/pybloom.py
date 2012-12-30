@@ -45,7 +45,8 @@ except ImportError:
 __version__ = '2.0X'
 __author__  = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\
                Marius Eriksen <marius@monkey.org>,\
-               Alex Brasetvik <alex@brasetvik.com>"
+               Alex Brasetvik <alex@brasetvik.com>,\
+               Glenn Langford <glenn.langford@gmail.com>"
 
 def make_hashfuncs(num_slices, num_bits):
     if num_bits >= (1 << 31):
@@ -78,13 +79,6 @@ def make_hashfuncs(num_slices, num_bits):
             h.update( key.encode('utf-8'))
         else:
             h.update(str(key))
-        return ( uint % num_bits for uint in unpack(fmt, h.digest()) )
-    def _make_single_hash_function_trim(key):
-        h = hasher.copy()
-        if isinstance(key, unicode):
-            h.update( key.encode('utf-8'))
-        else:
-            h.update(str(key))
         return ( uint % num_bits for uint in unpack(fmt, (h.digest())[:trim_digest]) )
     def _make_hashfuncs(key):
         if isinstance(key, unicode):
@@ -98,21 +92,13 @@ def make_hashfuncs(num_slices, num_bits):
             rval.extend( [uint % num_bits for uint in unpack(fmt, h.digest())] )
         del rval[num_slices:]
         return rval
-    # Return one of the defined wrappers; a simpler/faster function 
+    # Return one of the defined wrappers; a faster function 
     # is selected if possible
-    #return _make_hashfuncs
-    ######################
     if num_salts == 1:
         hasher = salts[0]
-        if len(fmt) == num_slices:
-            # Use single hasher with the full length of the hash digest
-            return _make_single_hash_function
-        else:
-            # When the full hash digest is not needed, cue wrapper to 
-            # trim the digest
-            fmt = fmt[:num_slices]
-            trim_digest = num_slices*chunk_size
-            return _make_single_hash_function_trim 
+        fmt = fmt[:num_slices]
+        trim_digest = num_slices*chunk_size
+        return _make_single_hash_function
     else: # use the generic method supporting multiple hash functions
         return _make_hashfuncs
 
@@ -177,10 +163,7 @@ class BloomFilter(object):
         """
         bits_per_slice = self.bits_per_slice
         bitarray = self.bitarray
-        ###if not isinstance(key, list):
         hashes = self.make_hashes(key)
-        ###else:
-        ###    hashes = key
         offset = 0
         for k in hashes:
             if not bitarray[offset + k]:
